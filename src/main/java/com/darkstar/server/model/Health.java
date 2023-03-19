@@ -5,8 +5,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,4 +29,8 @@ public class Health extends PanacheEntity {
 
     @Column(name = "reporting_timestamp")
     private LocalDateTime timestamp;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "shuttle_id", nullable = false)
+    private Shuttle shuttle;
 }

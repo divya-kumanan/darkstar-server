@@ -5,8 +5,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,4 +30,8 @@ public class Telemetry extends PanacheEntity {
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "shuttle_id", nullable = false)
+    private Shuttle shuttle;
 }

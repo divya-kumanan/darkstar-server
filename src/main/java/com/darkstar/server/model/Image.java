@@ -19,4 +19,8 @@ public class Image extends PanacheEntity {
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "shuttle_id", nullable = false)
+    private Shuttle shuttle;
 }
