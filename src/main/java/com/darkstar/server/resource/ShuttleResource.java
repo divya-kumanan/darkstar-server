@@ -29,8 +29,12 @@ public class ShuttleResource {
 
     @GET
     @Path("/{id}")
-    public Shuttle getShuttle(@PathParam("id") Long id) {
-        return shuttleRepository.findById(id);
+    public Shuttle getShuttleById(@PathParam("id") Long id) {
+        Shuttle shuttle = shuttleRepository.findById(id);
+        if(shuttle == null){
+            throw new NotFoundException();
+        }
+        return shuttle;
     }
 
     @POST
@@ -47,10 +51,10 @@ public class ShuttleResource {
         if (entity == null) {
             throw new WebApplicationException("Shuttle with id of " + id + " does not exist.", Response.Status.NOT_FOUND);
         }
-        entity.name = shuttle.name;
-        entity.manufacturedDate = shuttle.manufacturedDate;
-        entity.status = shuttle.status;
-        entity.missions = shuttle.missions;
+        entity.setName(shuttle.getName());
+        entity.setManufacturedDate(shuttle.getManufacturedDate());
+        entity.setStatus(shuttle.getStatus());
+        entity.setMissions(shuttle.getMissions());
         shuttleRepository.persist(entity);
         LOGGER.info("Updated shuttle " + id);
         return Response.ok(entity).build();
