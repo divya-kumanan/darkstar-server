@@ -2,6 +2,7 @@ package com.darkstar.server.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class Shuttle extends PanacheEntity {
     @Column(name= "name")
     public String name;

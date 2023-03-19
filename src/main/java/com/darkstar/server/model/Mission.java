@@ -1,6 +1,7 @@
 package com.darkstar.server.model;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class Mission extends PanacheEntity {
     @Column(name= "name")
     public String name;

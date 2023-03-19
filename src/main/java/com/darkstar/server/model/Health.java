@@ -1,30 +1,33 @@
 package com.darkstar.server.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.persistence.Column;
+import javax.persistence.Entity;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class Health extends PanacheEntity {
-    @NotNull
-    @Column(name = "reporting_system")
-    private String reportingSystem;
 
-    @NotNull
+    @Column(name = "reporting_system")
+    private ReportingSystem reportingSystem;
+
     @Column(name = "status")
     private String status;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column(name = "error_code")
     private String errorCode;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column(name = "error_description")
     private String errorDescription;
 
-    @NotNull
-    @Column(name = "timestamp")
+    @Column(name = "reporting_timestamp")
     private LocalDateTime timestamp;
 }
