@@ -26,12 +26,12 @@ public class Telemetry extends PanacheEntity {
     private double velocity;
 
     @Column(name = "systemStatus")
-    private String systemStatus;
+    private TelemetryStatus systemStatus;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "shuttle_id", nullable = false)
-    private Shuttle shuttle;
+    @JoinColumn(name = "mission_id", nullable = false)
+    private Mission mission;
 }

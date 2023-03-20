@@ -17,20 +17,20 @@ public class Health extends PanacheEntity {
     private ReportingSystem reportingSystem;
 
     @Column(name = "status")
-    private String status;
+    private HealthStatus status;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Column(name = "error_code")
+    @Column(name = "errorCode")
     private String errorCode;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Column(name = "error_description")
+    @Column(name = "errorDescription")
     private String errorDescription;
 
-    @Column(name = "reporting_timestamp")
-    private LocalDateTime timestamp;
+    @Column(name = "reportingTimestamp")
+    private LocalDateTime reportingTimestamp;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "shuttle_id", nullable = false)
-    private Shuttle shuttle;
+    @JoinColumn(name = "mission_id", nullable = false)
+    private Mission mission;
 }

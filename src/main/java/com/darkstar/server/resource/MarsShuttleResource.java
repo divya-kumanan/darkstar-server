@@ -1,21 +1,17 @@
 package com.darkstar.server.resource;
 
-import com.darkstar.server.model.Health;
-import com.darkstar.server.model.Image;
-import com.darkstar.server.model.Telemetry;
+import com.darkstar.server.model.*;
 import com.darkstar.server.repository.HealthRepository;
+import com.darkstar.server.repository.MissionRepository;
 import com.darkstar.server.repository.TelemetryRepository;
 import com.darkstar.server.repository.ImageRepository;
-import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -36,20 +32,45 @@ public class MarsShuttleResource {
     @Inject
     HealthRepository healthRepository;
 
+    @Inject
+    MissionRepository missionRepository;
+
     @POST
     @Transactional
     @Path("/telemetry")
     public void addTelemetry(Telemetry telemetry) {
+        if (telemetry.getMission() == null) {
+            throw new WebApplicationException("Telemetry details not provided in the request body", Response.Status.BAD_REQUEST);
+        }
+        Mission mission = Mission.findById(telemetry.getMission().id);
+        if (mission == null) {
+            throw new WebApplicationException("Mission with ID " + telemetry.getMission().id + " not found", Response.Status.NOT_FOUND);
+        }
+        if (telemetry.getAltitude() < 100 && telemetry.getVelocity() < 10) {
+            mission.setStatus(MissionStatus.LANDED);
+            mission.setEndDate(telemetry.getTimestamp().toLocalDate());
+        } else if (telemetry.getVelocity() > 50) {
+            mission.setStatus(MissionStatus.CRASHED);
+            mission.setEndDate(telemetry.getTimestamp().toLocalDate());
+        } else {
+            mission.setStatus(MissionStatus.IN_PROGRESS);
+        }
+        telemetry.setMission(mission);
         telemetryRepository.persist(telemetry);
+        missionRepository.persist(mission);
     }
 
     @POST
     @Transactional
     @Path("/images")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    @Counted(name = "countAddImage", description = "Counts how many times the addImage method has been invoked")
-    public void addImage(InputStream inputStream) {
+    public void addImage(InputStream inputStream, @QueryParam("missionId") Long missionId) {
+        Mission mission = missionRepository.findById(missionId);
+        if (mission == null) {
+            throw new WebApplicationException("Mission with ID " + missionId + " not found", Response.Status.NOT_FOUND);
+        }
         Image image = new Image();
+        image.setMission(mission);
         try {
             image.setData(inputStream.readAllBytes());
         } catch (IOException e) {
@@ -65,8 +86,20 @@ public class MarsShuttleResource {
     @Transactional
     @Path("/health")
     public void addHealth(Health health) {
-        LOGGER.info("Entered here");
+        if (health.getMission() == null) {
+            throw new WebApplicationException("Health details not provided in the request body", Response.Status.BAD_REQUEST);
+        }
+        Mission mission = missionRepository.findById(health.getMission().id);
+        if (mission == null) {
+            throw new WebApplicationException("Mission not found with id: " + health.getMission().id, Response.Status.NOT_FOUND);
+        }
+        if (health.getStatus().equals(HealthStatus.DOWN) || health.getStatus().equals(HealthStatus.OUT_OF_SERVICE)) {
+            mission.setStatus(MissionStatus.CRASHED);
+            mission.setEndDate(health.getReportingTimestamp().toLocalDate());
+        }
+        health.setMission(mission);
         healthRepository.persist(health);
+        missionRepository.persist(mission);
         LOGGER.info("Health saved successfully with ID: " + health.id);
     }
 }
