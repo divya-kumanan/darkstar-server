@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,7 +39,7 @@ public class MarsShuttleResource {
     @POST
     @Transactional
     @Path("/telemetry")
-    public void addTelemetry(Telemetry telemetry) {
+    public Response addTelemetry(Telemetry telemetry) {
         if (telemetry.getMission() == null) {
             throw new WebApplicationException("Telemetry details not provided in the request body", Response.Status.BAD_REQUEST);
         }
@@ -58,13 +59,15 @@ public class MarsShuttleResource {
         telemetry.setMission(mission);
         telemetryRepository.persist(telemetry);
         missionRepository.persist(mission);
+        LOGGER.info("Telemetry published for the mission " + mission.id);
+        return Response.created(URI.create("/api/missions/" + mission.id)).build();
     }
 
     @POST
     @Transactional
     @Path("/images")
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    public void addImage(InputStream inputStream, @QueryParam("missionId") Long missionId) {
+    public Response addImage(InputStream inputStream, @QueryParam("missionId") Long missionId) {
         Mission mission = missionRepository.findById(missionId);
         if (mission == null) {
             throw new WebApplicationException("Mission with ID " + missionId + " not found", Response.Status.NOT_FOUND);
@@ -79,13 +82,14 @@ public class MarsShuttleResource {
         LocalDateTime localDateTime = Instant.now().atZone(ZoneId.systemDefault()).toLocalDateTime();
         image.setTimestamp(localDateTime);
         imageRepository.persist(image);
-        LOGGER.info("Image saved successfully with ID: " + image.id);
+        LOGGER.info("Image saved for the mission " + mission.id);
+        return Response.created(URI.create("/api/missions/" + mission.id)).build();
     }
 
     @POST
     @Transactional
     @Path("/health")
-    public void addHealth(Health health) {
+    public Response addHealth(Health health) {
         if (health.getMission() == null) {
             throw new WebApplicationException("Health details not provided in the request body", Response.Status.BAD_REQUEST);
         }
@@ -100,6 +104,7 @@ public class MarsShuttleResource {
         health.setMission(mission);
         healthRepository.persist(health);
         missionRepository.persist(mission);
-        LOGGER.info("Health saved successfully with ID: " + health.id);
+        LOGGER.info("Health status published for the mission " + mission.id);
+        return Response.created(URI.create("/api/missions/" + mission.id)).build();
     }
 }
